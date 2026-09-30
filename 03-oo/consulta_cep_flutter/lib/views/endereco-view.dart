@@ -5,6 +5,7 @@ import 'package:consulta_cep_flutter/exceptions/cep-invalido-exception.dart';
 import 'package:consulta_cep_flutter/exceptions/cep-nao-encontrado-exception.dart';
 import 'package:consulta_cep_flutter/models/endereco.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 import '../controllers/endereco-controller.dart';
 import 'package:flutter/material.dart';
@@ -150,6 +151,10 @@ class _EnderecoViewState extends State<EnderecoView> {
         consultarCEP();
       },
 
+      onChanged: (valor){
+        setState(() {});
+      },
+
       decoration: const InputDecoration(
         labelText: 'Digite o CEP',
         hintText: '00000-000',
@@ -208,6 +213,193 @@ class _EnderecoViewState extends State<EnderecoView> {
     );
   }
 
+  Widget _linhaEndereco(
+    IconData icone,
+    String titulo,
+    String valor, {bool mostrarDivisor = true}
+  ){
+    return Column(
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5FA),
+                borderRadius: BorderRadius.circular(14)
+              ),
+
+              child: Icon(
+                icone,
+                color: const Color(0xff60758F),
+              ),
+            ),            
+
+            const SizedBox(width: 14,),
+
+            Expanded(
+              child: Column(
+                 crossAxisAlignment: CrossAxisAlignment.start, 
+                 children: [
+                  Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF60758F),
+                    ),
+                  ),
+
+                  const SizedBox(height: 3,),
+
+                  Text(
+                    valor.isEmpty? 'Não informado':valor,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF14213D),
+                    ),
+                  ),
+
+                 ],
+              )
+            )
+          ],
+
+        ),
+
+        if(mostrarDivisor) ...[
+
+          const SizedBox(height: 12,),
+
+          const Divider(
+            height: 1,
+            color: Color(0xFFEDF1F7),
+          ),
+
+          const SizedBox(height: 12,),
+        ]
+      ],
+    );
+  }
+
+  Widget _construirEndereco(){
+    return Column(
+      children: [
+        Card(
+          elevation: 0,
+
+          color: Colors.white,
+
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadiusGeometry.circular(24),
+            side: const BorderSide(
+              color: Color(0xFFEDF147),
+            )
+          ),
+
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      Icons.home_rounded,
+                      color: Color(0xff0969e8),
+                    ),
+
+                    const SizedBox(width: 10,),
+
+                    Text(
+                      'Endereço',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 20,),
+
+                _linhaEndereco(
+                  Icons.signpost_rounded,
+                  'Logradouro' ,
+                  endereco!.logradouro,
+                ),
+
+                _linhaEndereco(
+                  Icons.location_city_rounded,                   
+                  'Bairro', 
+                  endereco!.bairro,
+                ),
+
+                _linhaEndereco(
+                  Icons.apartment_rounded,                   
+                  'Cidade', 
+                  endereco!.localidade,
+                ),
+
+                _linhaEndereco(
+                  Icons.map_rounded,                   
+                  'Estado (UF)', 
+                  '${endereco!.uf} - ${endereco!.estado}',
+                ),
+
+
+              ],
+            ),
+          ),
+
+        )
+      ],
+    );
+  }
+
+  Widget _constuirErro(){
+
+    return Container(
+
+      margin: const EdgeInsets.only(top: 8),
+
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: const Color(0xffffebee),
+
+        borderRadius: BorderRadius.circular(16),
+
+        border: Border.all(
+          color: const Color(0XFFFCDD2),
+        )
+      ),
+
+      child: Row(
+        children: [
+          const Icon(
+            Icons.error_outline_rounded,
+            color: Colors.red,
+          ),
+
+          const SizedBox(width: 12,),
+
+          Expanded(
+            child: Text(
+              mensagemErro!,
+              style: const TextStyle(
+                color: Color(0xffb71c1c),
+              ),
+            )
+          )
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -239,26 +431,11 @@ class _EnderecoViewState extends State<EnderecoView> {
 
                     _construirBotaoLimpar(),
 
-                    if (endereco != null) ...[
-                      const SizedBox(height: 24),
+                    if (endereco != null)
+                      _construirEndereco(),
 
-                      Text('Logradouro: ${endereco!.logradouro}'),
-
-                      Text('Bairro: ${endereco!.bairro}'),
-
-                      Text('Cidade: ${endereco!.localidade}'),
-
-                      Text('UF: ${endereco!.uf}'),
-                    ],
-
-                    if (mensagemErro != null) ...[
-                      const SizedBox(height: 16),
-
-                      Text(
-                        mensagemErro!,
-                        style: const TextStyle(color: Colors.red),
-                      ),
-                    ],
+                    if (mensagemErro != null)
+                      _constuirErro(), 
 
                     if (carregando) ...[
                       const SizedBox(height: 24),
