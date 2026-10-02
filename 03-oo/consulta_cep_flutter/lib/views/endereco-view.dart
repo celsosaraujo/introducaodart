@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:consulta_cep_flutter/exceptions/api-invalida-exception.dart';
-import 'package:consulta_cep_flutter/exceptions/cep-invalido-exception.dart';
-import 'package:consulta_cep_flutter/exceptions/cep-nao-encontrado-exception.dart';
-import 'package:consulta_cep_flutter/models/endereco.dart';
+import '../exceptions/api-invalida-exception.dart';
+import '../exceptions/cep-invalido-exception.dart';
+import '../exceptions/cep-nao-encontrado-exception.dart';
+import '../models/endereco.dart';
+import '../models/localizacao.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
@@ -24,17 +25,25 @@ class _EnderecoViewState extends State<EnderecoView> {
 
   Endereco? endereco;
 
+  Localizacao? localizacao;
+
   String? mensagemErro;
 
   bool carregando = false;
 
+  bool localizacaoIndisponivel = false;
+
   Future<void> consultarCEP() async {
     try {
+
       setState(() {
         carregando = true;
         mensagemErro = null;
         this.endereco = null;
+        this.localizacao = null;
+        localizacaoIndisponivel = false;
       });
+
       String cep = enderecoController.validaCEP(cepController.text);
 
       final endereco = await enderecoController.buscarEndereco(cep);
@@ -42,6 +51,21 @@ class _EnderecoViewState extends State<EnderecoView> {
       setState(() {
         this.endereco = endereco;
       });
+
+      try{
+
+        final localizacao = await enderecoController.buscarLocalizacao(cep);
+
+        setState(() {
+          this.localizacao = localizacao;          
+        });
+
+      }catch (e){
+        setState(() {
+          localizacaoIndisponivel = true;
+        });
+      }
+
     } on CepInvalidException catch (e) {
       setState(() {
         mensagemErro = e.toString();
@@ -213,6 +237,57 @@ class _EnderecoViewState extends State<EnderecoView> {
     );
   }
 
+  Widget _construirSucesso(){
+
+    return Container(
+
+      margin: const EdgeInsets.only(bottom: 16),
+
+      padding: const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+        color: Color(0Xfff8f8ef),
+
+        borderRadius: BorderRadius.circular(16),
+      ),
+
+      child: Row(
+        children: [
+          Container(
+
+            padding: const EdgeInsets.all(9),
+
+            decoration: const BoxDecoration(
+              color: Color(0xdd16a765),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.check_rounded,
+              color: Colors.white,
+            ),
+          ),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Endereço encontrado!',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF137A48),
+                  ),
+                ),
+
+                Text('CEP ${endereco!.cep} localizado com sucesso'),
+              ],
+            )
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _linhaEndereco(
     IconData icone,
     String titulo,
@@ -284,9 +359,148 @@ class _EnderecoViewState extends State<EnderecoView> {
     );
   }
 
+  Widget _construirAvisoLocalizacao() {
+
+    return Container(
+
+      margin:
+          const EdgeInsets.only(
+            top: 16,
+          ),
+
+      padding:
+          const EdgeInsets.all(16),
+
+      decoration: BoxDecoration(
+
+        color:
+            const Color(0xFFFFF8E1),
+
+        borderRadius:
+            BorderRadius.circular(16),
+
+        border: Border.all(
+          color:
+              const Color(0xFFFFE082),
+        ),
+      ),
+
+      child: const Row(
+
+        children: [
+
+          Icon(
+            Icons.location_off_rounded,
+            color:
+                Color(0xFFF57F17),
+          ),
+
+          SizedBox(width: 12),
+
+          Expanded(
+
+            child: Column(
+
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+
+              children: [
+
+                Text(
+                  'Localização indisponível',
+
+                  style: TextStyle(
+                    fontWeight:
+                        FontWeight.bold,
+
+                    color:
+                        Color(0xFF795548),
+                  ),
+                ),
+
+                SizedBox(height: 4),
+
+                Text(
+                  'O endereço foi encontrado, '
+                  'mas não foi possível obter '
+                  'a localização no mapa.',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirLocalizacao() {
+
+    return Card(
+
+      margin:
+          const EdgeInsets.only(
+            top: 16,
+          ),
+
+      child: Padding(
+
+        padding:
+            const EdgeInsets.all(16),
+
+        child: Column(
+
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
+
+          children: [
+
+            const Row(
+
+              children: [
+
+                Icon(
+                  Icons.location_on_rounded,
+                  color:
+                      Color(0xFF0969E8),
+                ),
+
+                SizedBox(width: 8),
+
+                Text(
+                  'Localização',
+
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight:
+                        FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 16),
+
+            Text(
+              'Latitude: '
+              '${localizacao!.latitude}',
+            ),
+
+            Text(
+              'Longitude: '
+              '${localizacao!.longitude}',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _construirEndereco(){
     return Column(
       children: [
+
+        _construirSucesso(),
+
         Card(
           elevation: 0,
 
@@ -348,14 +562,19 @@ class _EnderecoViewState extends State<EnderecoView> {
                   Icons.map_rounded,                   
                   'Estado (UF)', 
                   '${endereco!.uf} - ${endereco!.estado}',
-                ),
-
+                ),                    
+              
 
               ],
+
             ),
           ),
 
-        )
+        ),
+
+        if(localizacaoIndisponivel)
+          _construirAvisoLocalizacao(),
+
       ],
     );
   }
@@ -385,7 +604,7 @@ class _EnderecoViewState extends State<EnderecoView> {
             color: Colors.red,
           ),
 
-          const SizedBox(width: 12,),
+          // const SizedBox(width: 12,),
 
           Expanded(
             child: Text(
@@ -430,6 +649,8 @@ class _EnderecoViewState extends State<EnderecoView> {
                     const SizedBox(height: 16),
 
                     _construirBotaoLimpar(),
+
+                    const SizedBox(height: 24),
 
                     if (endereco != null)
                       _construirEndereco(),
