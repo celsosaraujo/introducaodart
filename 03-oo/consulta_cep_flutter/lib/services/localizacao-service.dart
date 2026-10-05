@@ -8,7 +8,7 @@ class LocalizacaoService {
 
   Future<Localizacao> consultar( String CEP ) async {
 
-    final url = Uri.parse('https://cep.awesomeapi.com.br/jso/$CEP');
+    final url = Uri.parse('https://cep.awesomeapi.com.br/json/$CEP');
 
     final resposta = await http.get(url);
 

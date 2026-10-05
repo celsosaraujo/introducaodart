@@ -570,16 +570,13 @@ class _EnderecoViewState extends State<EnderecoView> {
             ),
           ),
 
-        ),
-
-        if(localizacaoIndisponivel)
-          _construirAvisoLocalizacao(),
+        ),       
 
       ],
     );
   }
 
-  Widget _constuirErro(){
+  Widget _construirErro(){
 
     return Container(
 
@@ -656,7 +653,13 @@ class _EnderecoViewState extends State<EnderecoView> {
                       _construirEndereco(),
 
                     if (mensagemErro != null)
-                      _constuirErro(), 
+                      _construirErro(), 
+
+                    if(localizacaoIndisponivel)
+                      _construirAvisoLocalizacao(),  
+                      
+                    if(localizacao != null)  
+                      _construirLocalizacao(),
 
                     if (carregando) ...[
                       const SizedBox(height: 24),
