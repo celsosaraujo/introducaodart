@@ -1,12 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
 import '../exceptions/api-invalida-exception.dart';
 import '../exceptions/cep-invalido-exception.dart';
 import '../exceptions/cep-nao-encontrado-exception.dart';
 import '../models/endereco.dart';
 import '../models/localizacao.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 
 import '../controllers/endereco-controller.dart';
 import 'package:flutter/material.dart';
@@ -95,6 +96,8 @@ class _EnderecoViewState extends State<EnderecoView> {
     setState(() {
       endereco = null;
       mensagemErro = null;
+      localizacao = null;
+      localizacaoIndisponivel = false;
     });
   }
 
@@ -267,6 +270,8 @@ class _EnderecoViewState extends State<EnderecoView> {
             ),
           ),
 
+          SizedBox(width: 14,),
+
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,63 +440,51 @@ class _EnderecoViewState extends State<EnderecoView> {
 
   Widget _construirLocalizacao() {
 
-    return Card(
+    final double? latitude = double.tryParse(localizacao!.latitude);
+    final double? longitude = double.tryParse(localizacao!.longitude);
 
-      margin:
-          const EdgeInsets.only(
-            top: 16,
+    if(latitude == null || longitude == null ){
+      return Text(
+        'Localização Indisponível',
+      );
+    }
+
+    final LatLng coordenada = LatLng(latitude, longitude);
+
+    return SizedBox(
+
+      height: 250,
+      child: FlutterMap(
+
+        options: MapOptions(
+          initialCenter: coordenada,
+          initialZoom: 16,
+        ),
+
+        children: [
+          TileLayer(
+            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+            userAgentPackageName: 'br.com.senac.consultacep',
           ),
 
-      child: Padding(
-
-        padding:
-            const EdgeInsets.all(16),
-
-        child: Column(
-
-          crossAxisAlignment:
-              CrossAxisAlignment.start,
-
-          children: [
-
-            const Row(
-
-              children: [
-
-                Icon(
-                  Icons.location_on_rounded,
-                  color:
-                      Color(0xFF0969E8),
+          MarkerLayer(
+            markers: [
+              Marker(
+                point: coordenada,
+                width: 50,
+                height: 50,
+                child: const Icon(
+                  Icons.location_on,
+                  size: 40,
                 ),
+              ),
 
-                SizedBox(width: 8),
+            ],
+          )
 
-                Text(
-                  'Localização',
-
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight:
-                        FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 16),
-
-            Text(
-              'Latitude: '
-              '${localizacao!.latitude}',
-            ),
-
-            Text(
-              'Longitude: '
-              '${localizacao!.longitude}',
-            ),
-          ],
-        ),
+        ],
       ),
+
     );
   }
 
