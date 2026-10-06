@@ -35,6 +35,9 @@ class _EnderecoViewState extends State<EnderecoView> {
   bool localizacaoIndisponivel = false;
 
   Future<void> consultarCEP() async {
+
+    FocusScope.of(context).unfocus();
+
     try {
 
       setState(() {
@@ -178,14 +181,35 @@ class _EnderecoViewState extends State<EnderecoView> {
         consultarCEP();
       },
 
-      onChanged: (valor){
+      onChanged: (valor) {
         setState(() {});
       },
 
-      decoration: const InputDecoration(
+      decoration: InputDecoration(
         labelText: 'Digite o CEP',
         hintText: '00000-000',
-        prefixIcon: const Icon(Icons.search_rounded),
+
+        prefixIcon: const Icon(
+          Icons.search_rounded,
+        ),
+
+        suffixIcon: cepController.text.isNotEmpty
+            ? IconButton(
+                icon: const Icon(
+                  Icons.close_rounded,
+                ),
+                onPressed: () {
+                  cepController.clear();
+
+                  setState(() {
+                    endereco = null;
+                    mensagemErro = null;
+                    localizacao = null;
+                    localizacaoIndisponivel = false;
+                  });
+                },
+              )
+            : null,
       ),
     );
   }
@@ -288,6 +312,66 @@ class _EnderecoViewState extends State<EnderecoView> {
               ],
             )
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _construirCarregamento() {
+    return Container(
+      margin: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.all(20),
+
+      decoration: BoxDecoration(
+        color: const Color(0xFFF5F9FF),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: const Color(0xFFDCEBFF),
+        ),
+      ),
+
+      child: const Row(
+        children: [
+
+          SizedBox(
+            width: 28,
+            height: 28,
+            child: CircularProgressIndicator(
+              strokeWidth: 3,
+              color: Color(0xFF0969E8),
+            ),
+          ),
+
+          SizedBox(width: 16),
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+
+                Text(
+                  'Consultando CEP...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF14213D),
+                  ),
+                ),
+
+                SizedBox(height: 4),
+
+                Text(
+                  'Aguarde enquanto buscamos o endereço.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF60758F),
+                  ),
+                ),
+
+              ],
+            ),
+          ),
+
         ],
       ),
     );
@@ -440,51 +524,170 @@ class _EnderecoViewState extends State<EnderecoView> {
 
   Widget _construirLocalizacao() {
 
-    final double? latitude = double.tryParse(localizacao!.latitude);
-    final double? longitude = double.tryParse(localizacao!.longitude);
+    final double? latitude =
+        double.tryParse(localizacao!.latitude);
 
-    if(latitude == null || longitude == null ){
-      return Text(
-        'Localização Indisponível',
-      );
+    final double? longitude =
+        double.tryParse(localizacao!.longitude);
+
+    if (latitude == null || longitude == null) {
+      return _construirAvisoLocalizacao();
     }
 
-    final LatLng coordenada = LatLng(latitude, longitude);
+    final LatLng coordenada =
+        LatLng(latitude, longitude);
 
-    return SizedBox(
+    return Card(
+      margin: const EdgeInsets.only(top: 16),
 
-      height: 250,
-      child: FlutterMap(
+      elevation: 0,
 
-        options: MapOptions(
-          initialCenter: coordenada,
-          initialZoom: 16,
+      color: Colors.white,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(24),
+
+        side: const BorderSide(
+          color: Color(0xFFEDF1F7),
         ),
-
-        children: [
-          TileLayer(
-            urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-            userAgentPackageName: 'br.com.senac.consultacep',
-          ),
-
-          MarkerLayer(
-            markers: [
-              Marker(
-                point: coordenada,
-                width: 50,
-                height: 50,
-                child: const Icon(
-                  Icons.location_on,
-                  size: 40,
-                ),
-              ),
-
-            ],
-          )
-
-        ],
       ),
 
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+
+            // Título
+            const Row(
+              children: [
+
+                Icon(
+                  Icons.location_on_rounded,
+                  color: Color(0xFF0969E8),
+                ),
+
+                SizedBox(width: 10),
+
+                Text(
+                  'Localização',
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF14213D),
+                  ),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 6),
+
+            // Cidade / Estado
+            Text(
+              '${endereco!.localidade} - ${endereco!.uf}',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Color(0xFF60758F),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Mapa
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+
+              child: SizedBox(
+                height: 250,
+
+                child: FlutterMap(
+
+                  options: MapOptions(
+                    initialCenter: coordenada,
+                    initialZoom: 16,
+                  ),
+
+                  children: [
+
+                    TileLayer(
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+
+                      userAgentPackageName:
+                          'br.com.senac.consultacep',
+                    ),
+
+                    MarkerLayer(
+                      markers: [
+
+                        Marker(
+                          point: coordenada,
+                          width: 56,
+                          height: 56,
+
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                  blurRadius: 8,
+                                ),
+                              ],
+                            ),
+
+                            child: const Icon(
+                              Icons.location_on_rounded,
+                              color: Color(0xFF0969E8),
+                              size: 38,
+                            ),
+                          ),
+                        ),
+
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // Coordenadas
+            Row(
+              children: [
+
+                const Icon(
+                  Icons.my_location_rounded,
+                  size: 18,
+                  color: Color(0xFF60758F),
+                ),
+
+                const SizedBox(width: 8),
+
+                Expanded(
+                  child: Text(
+                    'Lat. ${localizacao!.latitude}  •  '
+                    'Long. ${localizacao!.longitude}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF60758F),
+                    ),
+                  ),
+                ),
+
+              ],
+            ),
+
+          ],
+        ),
+      ),
     );
   }
 
@@ -594,7 +797,7 @@ class _EnderecoViewState extends State<EnderecoView> {
             color: Colors.red,
           ),
 
-          // const SizedBox(width: 12,),
+           const SizedBox(width: 14,),
 
           Expanded(
             child: Text(
@@ -654,11 +857,9 @@ class _EnderecoViewState extends State<EnderecoView> {
                     if(localizacao != null)  
                       _construirLocalizacao(),
 
-                    if (carregando) ...[
-                      const SizedBox(height: 24),
+                    if (carregando)
+                      _construirCarregamento(),
 
-                      const Center(child: CircularProgressIndicator()),
-                    ],
                   ],
                 ),
               ),
