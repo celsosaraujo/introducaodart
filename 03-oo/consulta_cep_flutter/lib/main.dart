@@ -1,18 +1,22 @@
+import 'package:consulta_cep_flutter/views/endereco-view.dart';
 import 'package:flutter/material.dart';
-import 'views/endereco-view.dart';
+
+import 'views/splash_view.dart';
 
 void main() {
-  runApp(const ConsultaCEPApp());
+  runApp(const MeuAplicativo());
 }
 
-class ConsultaCEPApp extends StatelessWidget {
-  const ConsultaCEPApp({super.key});
+class MeuAplicativo extends StatelessWidget {
+  const MeuAplicativo({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(   
-      debugShowCheckedModeBanner: false,
+    return MaterialApp(
       title: 'Consulta CEP',
+      debugShowCheckedModeBanner: false,
+
+      home: const SplashView(),
 
       theme: ThemeData(
         useMaterial3: true,
@@ -50,8 +54,8 @@ class ConsultaCEPApp extends StatelessWidget {
           ),
         ),
       ),
-
-      home: const EnderecoView(),
+      
+      // home: const EnderecoView(),
     );
   }
 }

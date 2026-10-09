@@ -153,10 +153,10 @@ class _EnderecoViewState extends State<EnderecoView> {
             width: 72,
             height: 72,
 
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(22),
-            ),
+            // decoration: BoxDecoration(
+            //   color: Colors.white.withValues(alpha: 0.16),
+            //   borderRadius: BorderRadius.circular(22),
+            // ),
 
             child: const Icon(
               Icons.location_on_rounded,
@@ -628,19 +628,19 @@ class _EnderecoViewState extends State<EnderecoView> {
                           height: 56,
 
                           child: Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
+                            // decoration: BoxDecoration(
+                            //   color: Colors.white,
+                            //   shape: BoxShape.circle,
 
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: 0.18,
-                                  ),
-                                  blurRadius: 8,
-                                ),
-                              ],
-                            ),
+                            //   boxShadow: [
+                            //     BoxShadow(
+                            //       color: Colors.black.withValues(
+                            //         alpha: 0.18,
+                            //       ),
+                            //       blurRadius: 8,
+                            //     ),
+                            //   ],
+                            // ),
 
                             child: const Icon(
                               Icons.location_on_rounded,

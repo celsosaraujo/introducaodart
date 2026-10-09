@@ -1,3 +1,5 @@
+import 'package:consulta_cep_flutter/exceptions/cep-nao-informado-exception%20copy.dart';
+
 import '../models/localizacao.dart';
 import '../services/localizacao-service.dart';
 import '../exceptions/cep-invalido-exception.dart';
@@ -15,7 +17,7 @@ class EnderecoController {
     if (cep == null || cep.isEmpty) {
       // throw Exception("CEP invalido!!! Tente novamente.");
       // throw CepInvalidException("CEP invalido!!! Tente novamente.");
-      throw CepInvalidException();
+      throw CepNaoInformadoException();
     } else {
       //retirar todos os caracteres e letras, deixando apenas os números
       cep = cep.replaceAll(RegExp(r'[^0-9]'), '');
