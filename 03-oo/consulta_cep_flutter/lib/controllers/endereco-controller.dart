@@ -1,4 +1,4 @@
-import 'package:consulta_cep_flutter/exceptions/cep-nao-informado-exception%20copy.dart';
+import '../exceptions/cep-nao-informado-exception.dart';
 
 import '../models/localizacao.dart';
 import '../services/localizacao-service.dart';
